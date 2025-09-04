@@ -5,306 +5,254 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Liquid Glass Tamagotchi — Onefile</title>
+<meta name="format-detection" content="telephone=no">
+<title>Tamagotchi – Kompakt App (Onefile)</title>
 <style>
-/* ===============
-   Liquid Glass Design (iOS-like)
-   =============== */
+/* =============================
+   iPhone-native Look – High Contrast, Readable
+   ============================= */
 :root{
-  --bg1: #0b0d12;
-  --bg2: #0f1320;
-  --fg: #e9ecf1;
-  --muted:#a9b1c7;
-  --accent:#87b4ff;
-  --accent-2:#7cf1cf;
-  --good:#36d399;
-  --warn:#ffd166;
-  --bad:#ff6b6b;
-  --glass: rgba(255,255,255,.08);
-  --glass-strong: rgba(255,255,255,.14);
-  --stroke: rgba(255,255,255,.22);
-  --shadow: 0 20px 60px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.06);
-  --ring-bg: rgba(255,255,255,.08);
+  --bg: #0b0d10;
+  --surface: #141820;
+  --card: #1b2130;
+  --border: #2a3242;
+  --fg: #ecf1f7;
+  --muted: #aab4c3;
+  --accent: #2f7af7;
+  --good: #18c37b;
+  --warn: #f0b429;
+  --bad: #e65353;
+  --sat: #19c37d;   /* Sättigung (invertierter Hunger) */
+  --en:  #2f7af7;   /* Energie */
+  --hy:  #00a3a3;   /* Hygiene */
+  --shadow: 0 8px 24px rgba(0,0,0,.35);
 }
 @media (prefers-color-scheme: light){
   :root{
-    --bg1:#eff3ff; --bg2:#e3e9fb; --fg:#0e1320; --muted:#52607a;
-    --accent:#2563eb; --accent-2:#00c2a8;
-    --glass: rgba(255,255,255,.6); --glass-strong: rgba(255,255,255,.75);
-    --stroke: rgba(0,0,0,.08); --shadow: 0 20px 50px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.8);
-    --ring-bg: rgba(0,0,0,.08);
+    --bg:#f6f8fb; --surface:#ffffff; --card:#ffffff; --border:#e5e8ef;
+    --fg:#0b0d10; --muted:#566072; --accent:#2f6cf7;
+    --good:#0f9d68; --warn:#c9850b; --bad:#c63737;
+    --sat:#0f9d68; --en:#2f6cf7; --hy:#0a8a8a;
+    --shadow: 0 6px 18px rgba(0,0,0,.08);
   }
 }
 *{box-sizing:border-box}
 html,body{height:100%}
 body{
-  margin:0; font-family: ui-sans-serif, system-ui, -apple-system, "SF Pro", Segoe UI, Roboto;
-  color:var(--fg);
-  background:
-     radial-gradient(1200px 800px at -10% -10%, #3a66ff20, transparent 60%),
-     radial-gradient(1000px 700px at 110% 120%, #00ffc820, transparent 60%),
-     linear-gradient(180deg, var(--bg1), var(--bg2));
+  margin:0; font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "SF Pro", Segoe UI, Roboto, Ubuntu;
+  background: var(--bg); color: var(--fg);
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
 }
-
-/* Liquid blobs behind */
-.blobs{position:fixed; inset:-10% -10% -10% -10%; z-index:-1; filter: blur(40px) saturate(130%); pointer-events:none}
-.blob{position:absolute; width:38vmax; height:38vmax; border-radius:50%; opacity:.7; mix-blend-mode: screen}
-.blob.b1{left:-8vmax; top:-6vmax; background: radial-gradient(circle at 30% 30%, #6ea8ff, #3a66ff 60%, transparent 70%)}
-.blob.b2{right:-10vmax; top:10vmax; background: radial-gradient(circle at 50% 50%, #46ffd7, #00c2a8 60%, transparent 70%)}
-.blob.b3{left:20vmax; bottom:-12vmax; background: radial-gradient(circle at 50% 50%, #ffd166, #ff9f43 60%, transparent 70%)}
-@media (max-width:560px){ .blob{width:60vmax; height:60vmax} }
-
-/* Safe area padding for iPhone */
+/* App container with safe-area paddings */
 .app{
-  max-width: 900px;
+  max-width: 880px;
   margin: 0 auto;
-  padding: calc(16px + env(safe-area-inset-top)) 16px calc(96px + env(safe-area-inset-bottom));
+  padding: calc(12px + env(safe-area-inset-top)) 16px calc(88px + env(safe-area-inset-bottom));
 }
-
-/* Glass header */
-header{
+/* Top bar */
+.nav{
   position: sticky; top: 0; z-index: 10;
-  margin: -16px -16px 16px;
-  padding: 14px 16px calc(14px + env(safe-area-inset-top));
-  backdrop-filter: blur(18px) saturate(140%);
-  -webkit-backdrop-filter: blur(18px) saturate(140%);
-  background: linear-gradient(180deg, var(--glass-strong), transparent);
-  border-bottom: 1px solid var(--stroke);
+  margin: calc(-12px - env(safe-area-inset-top)) -16px 12px;
+  padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
 }
-h1{margin:0; font-size:20px; letter-spacing:.2px; font-weight:700}
+.title{margin:0; font-size:20px; font-weight:800; letter-spacing:.2px}
 .sub{color:var(--muted); font-size:12px}
-
-/* Glass card */
+/* Cards */
 .card{
-  background: linear-gradient(180deg, var(--glass), transparent 140%);
-  border: 1px solid var(--stroke);
-  border-radius: 20px;
-  box-shadow: var(--shadow);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
   padding: 14px;
   margin: 12px 0;
-  backdrop-filter: blur(18px) saturate(140%);
-  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: var(--shadow);
 }
-
 /* Layout helpers */
 .grid{display:grid; gap:12px}
-.cols-2{grid-template-columns: repeat(2, minmax(0, 1fr))}
-.cols-3{grid-template-columns: repeat(3, minmax(0, 1fr))}
+.cols-2{grid-template-columns: repeat(2, minmax(0,1fr))}
+.cols-3{grid-template-columns: repeat(3, minmax(0,1fr))}
 .flex{display:flex; gap:12px; align-items:center; flex-wrap:wrap}
 .center{display:flex; align-items:center; justify-content:center}
 .row{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
 .grow{flex:1}
-.tiny{font-size:11px} .muted{color:var(--muted)}
+.tiny{font-size:12px}
 .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace}
-
-/* Pet "orb" */
-.orb{
-  width: 260px; aspect-ratio: 1/1; border-radius: 30px; position: relative; overflow: hidden;
-  background:
-    radial-gradient(160px 120px at 30% 20%, rgba(255,255,255,.35), transparent 50%),
-    radial-gradient(100px 120px at 80% 10%, rgba(255,255,255,.2), transparent 60%),
-    linear-gradient(180deg, #16203a, #0f1628);
-  border: 1px solid var(--stroke);
+.muted{color: var(--muted)}
+/* Pet hero */
+.pet{
+  min-width:240px; aspect-ratio: 1/1; border-radius: 18px; position: relative; overflow: hidden;
+  background: linear-gradient(180deg, #1e2533, #141b28);
+  border:1px solid var(--border);
   box-shadow: var(--shadow);
 }
-.orb::before{
-  content:""; position:absolute; inset:0;
-  background:
-     radial-gradient(1000px 500px at 50% -10%, #8fbaff33, transparent 60%),
-     radial-gradient(800px 600px at 120% 120%, #00ffd533, transparent 60%);
-  mix-blend-mode: screen; pointer-events:none;
+.pet .face{position:absolute; left:50%; top:44%; transform:translate(-50%,-50%); text-align:center}
+.pet .emoji{font-size:72px; line-height:72px}
+.pet .name{margin-top:8px; font-weight:800; font-size:16px}
+.pet .meta{margin-top:4px; font-size:12px; color:var(--muted)}
+/* Simple, accessible meters */
+.meter{
+  width:100%; height:22px; border-radius:999px; background: #0e1320;
+  border: 1px solid var(--border); overflow:hidden; position:relative;
 }
-.scene{position:absolute; inset:0}
-.ground{position:absolute; inset:auto 0 0 0; height:42%;
-  background: linear-gradient(180deg, #1c2847, #152038);
-  border-top: 1px solid rgba(255,255,255,.15);
+.fill{
+  height:100%; width:0%; transition: width .35s ease;
+  background: var(--accent);
 }
-.face{position:absolute; left:50%; top:46%; transform: translate(-50%, -50%); text-align:center}
-.emoji{font-size:70px; line-height:70px; filter: drop-shadow(0 10px 14px rgba(0,0,0,.35))}
-.name{margin-top:4px; font-weight:700}
-
-/* Glass ring stats */
-.stat{
-  height:120px; width:120px; border-radius: 24px; position: relative;
-  background: linear-gradient(180deg, var(--glass), transparent 140%);
-  border:1px solid var(--stroke);
-  box-shadow: var(--shadow);
-  display:flex; align-items:center; justify-content:center; flex-direction:column;
-  overflow:hidden;
+.meter .label{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:space-between;
+  padding:0 10px; font-weight:700; font-size:12px; color:#fff;
 }
-.ring{
-  --p: 180deg;
-  position:absolute; inset:0;
-  background:
-    radial-gradient(circle at 50% 50%, rgba(0,0,0,.18) 53px, transparent 54px),
-    conic-gradient(var(--accent) 0deg, var(--accent) var(--p), var(--ring-bg) var(--p), var(--ring-bg) 360deg);
-  mask: radial-gradient(circle at 50% 50%, transparent 52px, black 54px);
-  -webkit-mask: radial-gradient(circle at 50% 50%, transparent 52px, black 54px);
-  opacity:.95;
-}
-.stat b{font-size:20px; z-index:1}
-.stat small{z-index:1; color:var(--muted)}
-
+.meter.sat .fill{ background: linear-gradient(90deg, var(--sat), #77e2b3); }
+.meter.en  .fill{ background: linear-gradient(90deg, var(--en), #7fb1ff); }
+.meter.hy  .fill{ background: linear-gradient(90deg, var(--hy), #44d9d9); }
 /* Buttons */
-.btn, .action{
-  border: 1px solid var(--stroke);
-  background: linear-gradient(180deg, var(--glass-strong), transparent 120%);
-  color: var(--fg); font-weight:700;
-  border-radius: 14px; padding: 12px 14px; cursor:pointer;
+.btn,.action{
+  border:1px solid var(--border); border-radius:12px; padding:12px 14px; font-weight:800;
+  background: var(--accent); color:#fff; cursor:pointer; width:100%;
   box-shadow: var(--shadow);
-  width:100%;
 }
-.btn:active, .action:active{transform: translateY(1px) scale(.998)}
-
-/* Toolbar (bottom) */
-.toolbar{
-  position: fixed; left:0; right:0; bottom:0;
-  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
-  backdrop-filter: blur(16px) saturate(140%);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
-  background: linear-gradient(180deg, transparent, var(--glass-strong));
-  border-top: 1px solid var(--stroke);
-}
-.toolbar .bar{
-  max-width:900px; margin:0 auto;
-  display:grid; gap:12px; grid-template-columns: repeat(4, minmax(0,1fr));
-}
-
+.btn.secondary{ background: transparent; color: var(--fg) }
+.btn.ghost{ background: transparent; color: var(--muted); border-style:dashed }
+.btn:active,.action:active{ transform: translateY(1px) }
 /* Inputs */
 input[type="text"]{
-  width:100%; padding:12px; border-radius:14px; border:1px solid var(--stroke);
-  background: linear-gradient(180deg, var(--glass), transparent 160%);
-  color: var(--fg);
+  width:100%; padding:12px; border-radius:12px; border:1px solid var(--border);
+  background: var(--surface); color:var(--fg);
 }
-
-/* Badges */
-.badge{font-size:10px; padding:4px 8px; border-radius:999px; background: linear-gradient(180deg, var(--glass-strong), transparent 120%); border:1px solid var(--stroke)}
-
+label{font-size:12px; color:var(--muted)}
+/* Toolbar (bottom) */
+.toolbar{
+  position: fixed; left:0; right:0; bottom:0; z-index: 15;
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+  background: var(--surface); border-top: 1px solid var(--border);
+}
+.toolbar .bar{
+  max-width:880px; margin:0 auto;
+  display:grid; gap:10px; grid-template-columns: repeat(4, minmax(0,1fr));
+}
+.action{ background: var(--surface); color: var(--fg) }
+.action.primary{ background: var(--accent); color:#fff }
 /* Responsive */
 @media (max-width:860px){
-  .cols-3{grid-template-columns:1fr 1fr}
+  .cols-3{grid-template-columns: 1fr 1fr}
 }
 @media (max-width:640px){
   .cols-2{grid-template-columns:1fr}
   .cols-3{grid-template-columns:1fr}
-  .orb{width: 100%}
+}
+/* Accessibility tweaks */
+@media (prefers-reduced-motion: reduce){
+  .fill{ transition: none }
 }
 </style>
 </head>
 <body>
-<div class="blobs">
-  <div class="blob b1"></div>
-  <div class="blob b2"></div>
-  <div class="blob b3"></div>
-</div>
+<div class="app" role="application" aria-label="Tamagotchi App">
+  <div class="nav" role="banner">
+    <h1 class="title">Tamagotchi</h1>
+    <div class="sub">Onefile • iPhone-optimiert • Offline</div>
+  </div>
 
-<div class="app">
-  <header>
-    <h1>Liquid Glass Tamagotchi <span class="badge">Onefile</span></h1>
-    <div class="sub">iPhone‑optimiert • Offline • Weitergeben ohne Server</div>
-  </header>
+  <div class="card flex" role="region" aria-label="Haustier und Werte">
+    <div class="pet center grow" aria-live="polite">
+      <div class="face">
+        <div id="emoji" class="emoji" aria-label="Stimmung">😀</div>
+        <div id="petName" class="name">Mein Haustier</div>
+        <div class="meta" id="meta"><span id="ageLabel">0 Tage alt</span> • <span id="moodLabel">Laune: ok</span></div>
+      </div>
+    </div>
 
-  <div class="card flex">
-    <div class="orb center grow">
-      <div class="scene">
-        <div class="ground"></div>
-        <div class="face">
-          <div id="emoji" class="emoji">😀</div>
-          <div id="petName" class="name">Mein Haustier</div>
-          <div class="row muted tiny" style="justify-content:center; margin-top:6px">
-            <span id="ageLabel">0 Tage alt</span> • <span id="moodLabel">Laune: ok</span>
-          </div>
+    <div class="grid grow" style="min-width:260px">
+      <div class="grid">
+        <div class="meter sat" aria-label="Sättigung">
+          <div class="fill" id="satFill" style="width:0%"></div>
+          <div class="label"><span>🍎 Sättigung</span><span id="satVal">0%</span></div>
         </div>
+        <button class="btn" data-act="feed" aria-label="Füttern">🍎 Füttern</button>
       </div>
-    </div>
 
-    <div class="grid cols-3 grow">
-      <div class="stat center grid">
-        <div id="ring-hunger" class="ring" style="--p: 120deg"></div>
-        <b id="val-hunger">0%</b><small>Sättigung</small>
-        <button class="btn" data-act="feed">🍎 Füttern</button>
+      <div class="grid">
+        <div class="meter en" aria-label="Energie">
+          <div class="fill" id="enFill" style="width:0%"></div>
+          <div class="label"><span>⚡ Energie</span><span id="enVal">0%</span></div>
+        </div>
+        <button class="btn" data-act="sleep" aria-label="Schlafen">😴 Schlafen</button>
       </div>
-      <div class="stat center grid">
-        <div id="ring-energy" class="ring" style="--p: 220deg"></div>
-        <b id="val-energy">0%</b><small>Energie</small>
-        <button class="btn" data-act="sleep">😴 Schlafen</button>
-      </div>
-      <div class="stat center grid">
-        <div id="ring-hygiene" class="ring" style="--p: 180deg"></div>
-        <b id="val-hygiene">0%</b><small>Hygiene</small>
-        <button class="btn" data-act="wash">🫧 Waschen</button>
+
+      <div class="grid">
+        <div class="meter hy" aria-label="Hygiene">
+          <div class="fill" id="hyFill" style="width:0%"></div>
+          <div class="label"><span>🫧 Hygiene</span><span id="hyVal">0%</span></div>
+        </div>
+        <button class="btn" data-act="wash" aria-label="Waschen">🫧 Waschen</button>
       </div>
     </div>
   </div>
 
-  <div class="card grid cols-2">
+  <div class="card grid cols-2" role="region" aria-label="Interaktion">
     <div class="grid">
-      <label class="tiny muted">Name</label>
+      <label for="newName">Name</label>
       <input id="newName" type="text" placeholder="Name eingeben…" maxlength="24">
-      <button class="btn" id="renameBtn">Umbenennen</button>
+      <button class="btn secondary" id="renameBtn" aria-label="Umbenennen">Umbenennen</button>
     </div>
     <div class="grid">
-      <div class="row muted tiny"><span>🎮</span><b style="margin-left:6px">Spielen</b><span style="margin-left:6px">(+Laune, −Energie)</span></div>
-      <button class="btn" data-act="play">Jetzt spielen</button>
-      <div id="tip" class="tiny muted">Tipp: Regelmäßig öffnen hält dein Haustier glücklich.</div>
+      <div class="row muted tiny" aria-hidden="true"><span>🎮</span><b style="margin-left:6px">Spielen</b><span style="margin-left:6px">(+Laune, −Energie)</span></div>
+      <button class="btn" data-act="play" aria-label="Spielen">Jetzt spielen</button>
+      <div class="tiny muted">Tipp: Regelmäßig öffnen hält dein Haustier glücklich.</div>
     </div>
   </div>
 
-  <div class="card grid">
+  <div class="card grid" role="region" aria-label="Weitergeben">
     <b>Weitergeben</b>
-    <div class="muted tiny">Exportiere den Zustand als Code und schicke ihn z. B. per Messenger. Freund:innen können ihn importieren und weiterpflegen.</div>
+    <div class="muted tiny">Exportiere den Status als Code und schicke ihn weiter. Freund:innen können ihn importieren und weiterpflegen (ohne Server).</div>
     <div class="grid cols-2">
       <div class="grid">
-        <button class="btn" id="exportBtn">Zustand exportieren</button>
+        <button class="btn secondary" id="exportBtn" aria-label="Zustand exportieren">Zustand exportieren</button>
         <div id="exportOut" class="mono tiny" style="word-break:break-all"></div>
-        <button class="btn" id="copyBtn">Code kopieren</button>
+        <button class="btn ghost" id="copyBtn" aria-label="Code kopieren">Code kopieren</button>
       </div>
       <div class="grid">
-        <input id="importIn" type="text" placeholder="Code hier einfügen…">
-        <button class="btn" id="importBtn">Importieren</button>
+        <input id="importIn" type="text" placeholder="Code hier einfügen…" aria-label="Import-Code">
+        <button class="btn" id="importBtn" aria-label="Importieren">Importieren</button>
       </div>
     </div>
-    <div class="tiny muted">Sicherheit: Der Code enthält nur den Haustier‑Status (ohne persönliche Daten) und eine Prüfsumme. Alles passiert lokal im Browser.</div>
   </div>
 
-  <div class="card grid">
+  <div class="card grid" role="region" aria-label="Protokoll">
     <b>Protokoll</b>
     <div id="log" class="tiny mono" style="white-space:pre-wrap; max-height:180px; overflow:auto"></div>
     <div class="row">
-      <button class="btn" id="clearLog">Protokoll leeren</button>
-      <button class="btn" id="resetBtn">Zurücksetzen</button>
+      <button class="btn secondary" id="clearLog" aria-label="Protokoll leeren">Protokoll leeren</button>
+      <button class="btn ghost" id="resetBtn" aria-label="Zurücksetzen">Zurücksetzen</button>
     </div>
   </div>
 </div>
 
-<div class="toolbar">
+<!-- Bottom Action Bar -->
+<div class="toolbar" role="contentinfo">
   <div class="bar">
-    <div class="row" style="gap:12px">
-      <button class="action" data-act="feed">🍎 Füttern</button>
-      <button class="action" data-act="play">🎲 Spielen</button>
-      <button class="action" data-act="wash">🫧 Waschen</button>
-      <button class="action" data-act="sleep">😴 Schlafen</button>
-    </div>
+    <button class="action" data-act="feed" aria-label="Füttern">🍎 Füttern</button>
+    <button class="action" data-act="play" aria-label="Spielen">🎲 Spielen</button>
+    <button class="action" data-act="wash" aria-label="Waschen">🫧 Waschen</button>
+    <button class="action primary" data-act="sleep" aria-label="Schlafen">😴 Schlafen</button>
   </div>
 </div>
 
 <script>
-/* ===============
-   Tamagotchi Logic (offline, single-file)
-   =============== */
+/* =============================
+   Logik (unverändert robust, aber UI auf Meters)
+   ============================= */
 (function(){
   const $ = s => document.querySelector(s);
   const logEl = $("#log");
-  const KEY = "tamaState_liquid_v1";
+  const KEY = "tamaState_readable_v1";
   const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
   function checksum(str){
-    let h = 0; for (let i=0;i<str.length;i++){ h = (h*131 + str.charCodeAt(i)) >>> 0; }
-    return h.toString(36);
+    let h=0; for(let i=0;i<str.length;i++){ h=(h*131+str.charCodeAt(i))>>>0; } return h.toString(36);
   }
-
   function load(){
     const raw = localStorage.getItem(KEY);
     if(!raw){
@@ -313,24 +261,24 @@ input[type="text"]{
                hunger: 28, energy: 72, hygiene: 70, happiness: 72,
                ageDays: 0, stage:1, log:[] };
     }
-    try{ return JSON.parse(raw); }catch(e){ localStorage.removeItem(KEY); return load(); }
+    try{ return JSON.parse(raw); }catch{ localStorage.removeItem(KEY); return load(); }
   }
   function save(s){ localStorage.setItem(KEY, JSON.stringify(s)); }
   let S = load();
 
-  // Time decay
+  // Zeitverfall
   function applyDecay(){
     const now = Date.now();
     const hours = Math.max(0, (now - S.lastSeen)/36e5);
-    if (hours < 0.01) return;
-    const hungerUp = 6, energyDown = 5, hygieneDown = 3, moodDrift = 2;
+    if(hours < 0.01) return;
+    const hungerUp=6, energyDown=5, hygieneDown=3, moodDrift=2;
     S.hunger = clamp(S.hunger + hungerUp*hours, 0, 100);
     S.energy = clamp(S.energy - energyDown*hours, 0, 100);
     S.hygiene = clamp(S.hygiene - hygieneDown*hours, 0, 100);
     const penalty = (S.hunger*0.35) + ((100 - S.energy)*0.25) + ((100 - S.hygiene)*0.20) + hours*moodDrift;
     S.happiness = clamp(100 - penalty, 0, 100);
     const ageDays = Math.floor((now - S.birthday)/86400000);
-    if (ageDays !== S.ageDays){
+    if(ageDays !== S.ageDays){
       S.ageDays = ageDays;
       pushLog(`🎂 Tag ${S.ageDays}: wieder ein Stück gewachsen.`);
       if (S.ageDays === 3) S.stage = 2;
@@ -338,11 +286,12 @@ input[type="text"]{
     }
     if (S.hunger >= 100 && hours > 6){
       S.alive = false;
-      pushLog("💨 Dein Haustier ist auf Reisen gegangen (Vernachlässigung). Innerhalb 24h in einem Freundes‑Browser importieren, um es zurückzuholen.");
+      pushLog("💨 Dein Haustier ist auf Reisen gegangen (Vernachlässigung). Innerhalb 24h in einem Freundes-Browser importieren, um es zurückzuholen.");
     }
     S.lastSeen = now; save(S);
   }
 
+  // UI
   function faceByMood(){
     if(!S.alive) return "🥺";
     if (S.happiness > 80) return "🤩";
@@ -361,11 +310,12 @@ input[type="text"]{
     return "traurig";
   }
 
-  function setRing(id, value){
-    const deg = Math.round(clamp(value,0,100)/100 * 360);
-    const el = $("#ring-"+id);
-    el.style.setProperty("--p", deg+"deg");
-    $("#val-"+id).textContent = Math.round(value) + "%";
+  function setMeter(id, val){
+    const elFill = $("#" + id + "Fill");
+    const elVal  = $("#" + id + "Val");
+    const v = clamp(val, 0, 100);
+    elFill.style.width = v + "%";
+    elVal.textContent = Math.round(v) + "%";
   }
 
   function render(){
@@ -373,9 +323,9 @@ input[type="text"]{
     $("#emoji").textContent = faceByMood();
     $("#ageLabel").textContent = `${S.ageDays} Tage alt`;
     $("#moodLabel").textContent = `Laune: ${moodLabel()}`;
-    setRing("hunger", 100 - S.hunger); // Sättigung = invertierter Hunger
-    setRing("energy", S.energy);
-    setRing("hygiene", S.hygiene);
+    setMeter("sat", 100 - S.hunger); // Sättigung = invertierter Hunger
+    setMeter("en", S.energy);
+    setMeter("hy", S.hygiene);
   }
 
   function pushLog(msg){
@@ -386,7 +336,7 @@ input[type="text"]{
     save(S);
   }
 
-  // Actions with cooldowns
+  // Aktionen + Cooldowns
   const cooldowns = { feed: 5*60*1000, play: 5*60*1000, wash: 10*60*1000, sleep: 10*60*1000 };
   const lastAction = { feed:0, play:0, wash:0, sleep:0 };
   const canAct = k => (Date.now() - lastAction[k]) >= cooldowns[k];
@@ -394,7 +344,7 @@ input[type="text"]{
 
   const actions = {
     feed(){
-      if(!S.alive) return alert("Es ist unterwegs… importiere den Code in einem Freundes‑Browser, um es zurückzuholen.");
+      if(!S.alive) return alert("Es ist unterwegs… importiere den Code in einem Freundes-Browser, um es zurückzuholen.");
       if(!canAct("feed")) return alert("Noch satt. Versuch es später.");
       const before = S.hunger;
       S.hunger = clamp(S.hunger - 35, 0, 100);
@@ -449,7 +399,7 @@ input[type="text"]{
     }catch(e){ alert("Ungültiger Code."); return false; }
   }
 
-  // Wire events
+  // Event wiring
   document.querySelectorAll("[data-act]").forEach(btn => {
     const kind = btn.getAttribute("data-act");
     const handler = () => { actions[kind](); save(S); render(); };
@@ -475,7 +425,7 @@ input[type="text"]{
     }
   }, {passive:true});
 
-  // Start
+  // Init
   applyDecay(); render(); logEl.textContent = (S.log||[]).join("\\n");
 })();
 </script>
